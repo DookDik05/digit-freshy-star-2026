@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
-import { ClipboardList, Trophy, Check, CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { ClipboardList, Trophy, Check, CheckCircle2, AlertCircle, X, ChevronRight } from 'lucide-react';
 import ParticleBackground from './components/ParticleBackground/ParticleBackground';
 import Header from './components/Header/Header';
 import ContestantTable from './components/ContestantTable/ContestantTable';
@@ -17,8 +17,8 @@ export default function App() {
   const [currentPage, setCurrentPage] = useState<PageView>('scoring');
 
   const {
-    contestants,
     currentRound,
+    setRound,
     scores,
     judgeId,
     setJudgeId,
@@ -28,6 +28,7 @@ export default function App() {
     showModal,
     setShowModal,
     submittedRounds,
+    getActiveContestants,
     isRoundComplete,
   } = useScoringStore();
 
@@ -36,7 +37,7 @@ export default function App() {
 
   useEffect(() => {
     fetchContestants();
-  }, [fetchContestants]);
+  }, [fetchContestants, currentRound]);
 
   const handleOpenModal = useCallback(() => {
     setError(null);
@@ -47,11 +48,23 @@ export default function App() {
     setShowModal(true);
   }, [judgeId, setShowModal, setError]);
 
+  const activeContestants = getActiveContestants();
   const scoredCount = Object.keys(scores).length;
-  const totalCount = contestants.length;
+  const totalCount = activeContestants.length;
   const isSubmitted = submittedRounds.includes(currentRound);
   const canSubmit = isRoundComplete() && !isSubmitted;
   const currentRoundLabel = ROUNDS.find((r) => r.id === currentRound)?.label;
+
+  const nextRoundObj = ROUNDS.find((r) => r.id === currentRound + 1);
+
+  const handleNextRound = () => {
+    if (currentRound < 4) {
+      setRound(currentRound + 1);
+    } else {
+      setCurrentPage('results');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className={styles.app}>
@@ -160,24 +173,48 @@ export default function App() {
                   {/* Submit */}
                   <div className={styles.submitSection}>
                     {isSubmitted ? (
-                      <div className={styles.submittedBadge}>
-                        <CheckCircle2 size={18} className={styles.checkIcon} />
-                        ส่งคะแนน {currentRoundLabel} เรียบร้อยแล้ว
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', width: '100%' }}>
+                        <div className={styles.submittedBadge}>
+                          <CheckCircle2 size={18} className={styles.checkIcon} />
+                          ส่งคะแนน {currentRoundLabel} เรียบร้อยแล้ว
+                        </div>
+
+                        <button
+                          className={styles.nextRoundBtn}
+                          onClick={handleNextRound}
+                        >
+                          {currentRound < 4
+                            ? `ไปโหวตรอบถัดไป: ${nextRoundObj?.label}`
+                            : 'ดูสรุปผลคะแนนรวมการแข่งขัน'}
+                          <ChevronRight size={18} />
+                        </button>
                       </div>
                     ) : (
-                      <button
-                        id="submit-scores-btn"
-                        className={`${styles.submitBtn} ${!canSubmit ? styles.submitBtnDisabled : ''}`}
-                        onClick={handleOpenModal}
-                      >
-                        {canSubmit ? (
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <Check size={18} /> ส่งคะแนน {currentRoundLabel}
-                          </span>
-                        ) : (
-                          `กรุณาให้คะแนนครบ ${totalCount} คน (${scoredCount}/${totalCount})`
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', width: '100%' }}>
+                        <button
+                          id="submit-scores-btn"
+                          className={`${styles.submitBtn} ${!canSubmit ? styles.submitBtnDisabled : ''}`}
+                          onClick={handleOpenModal}
+                        >
+                          {canSubmit ? (
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <Check size={18} /> ส่งคะแนน {currentRoundLabel}
+                            </span>
+                          ) : (
+                            `กรุณาให้คะแนนครบ ${totalCount} คน (${scoredCount}/${totalCount})`
+                          )}
+                        </button>
+
+                        {currentRound < 4 && (
+                          <button
+                            className={styles.nextRoundLinkBtn}
+                            onClick={handleNextRound}
+                            title="ข้ามไปโหวตรอบถัดไป"
+                          >
+                            ข้ามไป {nextRoundObj?.label} <ChevronRight size={16} />
+                          </button>
                         )}
-                      </button>
+                      </div>
                     )}
                   </div>
                 </>

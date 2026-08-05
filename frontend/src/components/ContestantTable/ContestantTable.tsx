@@ -84,9 +84,10 @@ const ContestantRow = memo(function ContestantRow({
 });
 
 export default function ContestantTable() {
-  const { contestants, scores, currentRound, submittedRounds, setScore } =
+  const { getActiveContestants, scores, currentRound, submittedRounds, setScore } =
     useScoringStore();
 
+  const activeContestants = getActiveContestants();
   const isSubmitted = submittedRounds.includes(currentRound);
 
   const handleScore = useCallback(
@@ -98,10 +99,28 @@ export default function ContestantTable() {
     [isSubmitted, setScore]
   );
 
-  if (contestants.length === 0) return null;
+  if (activeContestants.length === 0) return null;
 
   return (
     <div className={styles.tableWrapper}>
+      {currentRound === 4 && (
+        <div style={{
+          padding: '0.75rem 1rem',
+          background: 'linear-gradient(135deg, rgba(230, 48, 18, 0.2), rgba(255, 107, 26, 0.15))',
+          border: '1px solid rgba(255, 107, 26, 0.4)',
+          borderRadius: '8px',
+          marginBottom: '1rem',
+          color: '#ffb450',
+          fontSize: '0.85rem',
+          fontWeight: 600,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          boxShadow: '0 0 14px rgba(230, 48, 18, 0.2)'
+        }}>
+          🏆 รอบตอบคำถาม (Round 4): แสดงเฉพาะผู้เข้าประกวด 7 คนสุดท้ายที่ผ่านเข้ารอบ (3 คนตกรอบ)
+        </div>
+      )}
       <table className={styles.table} role="grid" aria-label="ตารางให้คะแนนผู้เข้าประกวด">
         <thead>
           <tr className={styles.headerRow}>
@@ -116,7 +135,7 @@ export default function ContestantTable() {
           </tr>
         </thead>
         <tbody>
-          {contestants.map((c) => (
+          {activeContestants.map((c) => (
             <ContestantRow
               key={c.id}
               contestant={c}

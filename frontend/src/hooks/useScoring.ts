@@ -17,6 +17,24 @@ const BACKEND_URL = getBackendUrl();
 export function useScoring() {
   const store = useScoringStore();
 
+  const fetchTop7Qualified = useCallback(async () => {
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/scores/results`);
+      if (res.ok) {
+        const json = await res.json();
+        const results = json.data ?? [];
+        if (results.length > 0) {
+          const top7 = results
+            .slice(0, 7)
+            .map((r: { contestantId: string }) => r.contestantId);
+          store.setQualifiedTop7Ids(top7);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch top 7 qualified:', err);
+    }
+  }, [store]);
+
   const fetchContestants = useCallback(async () => {
     store.setLoading(true);
     store.setError(null);
@@ -25,13 +43,14 @@ export function useScoring() {
       if (!res.ok) throw new Error('Failed to fetch contestants');
       const data = await res.json();
       store.setContestants(data.data);
+      await fetchTop7Qualified();
     } catch (err) {
       store.setError('ไม่สามารถโหลดข้อมูลผู้เข้าประกวดได้ กรุณาลองใหม่');
       console.error(err);
     } finally {
       store.setLoading(false);
     }
-  }, []);
+  }, [fetchTop7Qualified]);
 
   const submitScores = useCallback(async () => {
     if (!store.judgeId.trim()) {

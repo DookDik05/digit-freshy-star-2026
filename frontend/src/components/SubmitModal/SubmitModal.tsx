@@ -9,7 +9,7 @@ export default function SubmitModal() {
   const {
     showModal,
     setShowModal,
-    contestants,
+    getActiveContestants,
     scores,
     currentRound,
     judgeId,
@@ -18,6 +18,8 @@ export default function SubmitModal() {
     setError,
   } = useScoringStore();
   const { submitScores } = useScoring();
+
+  const activeContestants = getActiveContestants();
 
   const currentRoundLabel =
     ROUNDS.find((r) => r.id === currentRound)?.label ?? `Round ${currentRound}`;
@@ -58,14 +60,15 @@ export default function SubmitModal() {
         aria-labelledby="modal-title"
       >
         {/* Header */}
-        <div className={styles.modalHeader}>
+        <div className={styles.header}>
           <h2 id="modal-title" className={styles.title}>
             ยืนยันการส่งคะแนน
           </h2>
           <button
             className={styles.closeBtn}
             onClick={handleClose}
-            aria-label="ปิด"
+            aria-label="ปิดหน้าต่าง"
+            disabled={isSubmitting}
           >
             <X size={18} />
           </button>
@@ -84,14 +87,14 @@ export default function SubmitModal() {
           <div className={styles.infoRow}>
             <span className={styles.infoLabel}>คะแนนที่ให้</span>
             <span className={styles.infoValue}>
-              {Object.keys(scores).length} / {contestants.length} คน
+              {Object.keys(scores).length} / {activeContestants.length} คน
             </span>
           </div>
         </div>
 
         {/* Score Summary */}
         <div className={styles.summary}>
-          {contestants.map((c) => (
+          {activeContestants.map((c) => (
             <div key={c.id} className={styles.summaryRow}>
               <span className={styles.summaryName}>{c.nickname}</span>
               <div className={styles.summaryScore}>
