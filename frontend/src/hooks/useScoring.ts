@@ -15,7 +15,13 @@ const getBackendUrl = () => {
 const BACKEND_URL = getBackendUrl();
 
 export function useScoring() {
-  const store = useScoringStore();
+  const setContestants = useScoringStore((s) => s.setContestants);
+  const setQualifiedTop7Ids = useScoringStore((s) => s.setQualifiedTop7Ids);
+  const setLoading = useScoringStore((s) => s.setLoading);
+  const setError = useScoringStore((s) => s.setError);
+  const setSubmitting = useScoringStore((s) => s.setSubmitting);
+  const setShowModal = useScoringStore((s) => s.setShowModal);
+  const markRoundSubmitted = useScoringStore((s) => s.markRoundSubmitted);
 
   const fetchTop7Qualified = useCallback(async () => {
     try {
@@ -27,46 +33,48 @@ export function useScoring() {
           const top7 = results
             .slice(0, 7)
             .map((r: { contestantId: string }) => r.contestantId);
-          store.setQualifiedTop7Ids(top7);
+          setQualifiedTop7Ids(top7);
         }
       }
     } catch (err) {
       console.error('Failed to fetch top 7 qualified:', err);
     }
-  }, [store]);
+  }, [setQualifiedTop7Ids]);
 
   const fetchContestants = useCallback(async () => {
-    store.setLoading(true);
-    store.setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`${BACKEND_URL}/api/contestants`);
       if (!res.ok) throw new Error('Failed to fetch contestants');
       const data = await res.json();
-      store.setContestants(data.data);
+      setContestants(data.data);
       await fetchTop7Qualified();
     } catch (err) {
-      store.setError('ไม่สามารถโหลดข้อมูลผู้เข้าประกวดได้ กรุณาลองใหม่');
+      setError('ไม่สามารถโหลดข้อมูลผู้เข้าประกวดได้ กรุณาลองใหม่');
       console.error(err);
     } finally {
-      store.setLoading(false);
+      setLoading(false);
     }
-  }, [fetchTop7Qualified]);
+  }, [setContestants, setError, setLoading, fetchTop7Qualified]);
 
   const submitScores = useCallback(async () => {
-    if (!store.judgeId.trim()) {
-      store.setError('กรุณาระบุรหัสกรรมการก่อนส่งคะแนน');
+    const { judgeId, scores, currentRound } = useScoringStore.getState();
+
+    if (!judgeId.trim()) {
+      setError('กรุณาระบุรหัสกรรมการก่อนส่งคะแนน');
       return;
     }
 
-    store.setSubmitting(true);
-    store.setError(null);
+    setSubmitting(true);
+    setError(null);
 
     try {
-      const submissions = Object.entries(store.scores).map(
+      const submissions = Object.entries(scores).map(
         ([contestantId, score]) => ({
           contestantId,
-          judgeId: store.judgeId.trim(),
-          round: store.currentRound,
+          judgeId: judgeId.trim(),
+          round: currentRound,
           score,
         })
       );
@@ -82,15 +90,15 @@ export function useScoring() {
         throw new Error(errData.error || 'ส่งคะแนนไม่สำเร็จ');
       }
 
-      store.markRoundSubmitted(store.currentRound);
-      store.setShowModal(false);
+      markRoundSubmitted(currentRound);
+      setShowModal(false);
     } catch (err) {
-      store.setError('เกิดข้อผิดพลาดในการส่งคะแนน กรุณาลองใหม่');
+      setError('เกิดข้อผิดพลาดในการส่งคะแนน กรุณาลองใหม่');
       console.error(err);
     } finally {
-      store.setSubmitting(false);
+      setSubmitting(false);
     }
-  }, [store]);
+  }, [setError, setSubmitting, markRoundSubmitted, setShowModal]);
 
   return { fetchContestants, submitScores };
 }

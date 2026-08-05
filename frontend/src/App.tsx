@@ -37,7 +37,7 @@ export default function App() {
 
   useEffect(() => {
     fetchContestants();
-  }, [fetchContestants, currentRound]);
+  }, [fetchContestants]);
 
   const handleOpenModal = useCallback(() => {
     setError(null);
