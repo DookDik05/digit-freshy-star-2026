@@ -1,10 +1,21 @@
 import { useEffect, useState, useCallback } from 'react';
-import { Trophy, Crown, RotateCw, Medal } from 'lucide-react';
+import { Trophy, Crown, RotateCw, Medal, Trash2, AlertTriangle } from 'lucide-react';
 import type { Contestant } from '../../types';
 import { ROUNDS } from '../../types';
 import styles from './ResultsPage.module.css';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const getBackendUrl = () => {
+  if (import.meta.env.PROD) {
+    const customUrl = import.meta.env.VITE_BACKEND_URL;
+    if (customUrl && !customUrl.includes('localhost')) {
+      return customUrl;
+    }
+    return '';
+  }
+  return import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+};
+
+const BACKEND_URL = getBackendUrl();
 
 interface RoundAverage {
   [round: number]: number;
@@ -51,6 +62,8 @@ export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<string>('');
   const [selectedRound, setSelectedRound] = useState<number>(0); // 0 = overall
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -77,6 +90,26 @@ export default function ResultsPage() {
       setIsLoading(false);
     }
   }, []);
+
+  const handleResetScores = async () => {
+    setIsResetting(true);
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/scores/reset`, {
+        method: 'POST',
+      });
+      if (res.ok) {
+        setShowResetModal(false);
+        await fetchData();
+      } else {
+        alert('เกิดข้อผิดพลาดในการรีเซ็ตคะแนน');
+      }
+    } catch (err) {
+      console.error('Failed to reset scores:', err);
+      alert('เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์');
+    } finally {
+      setIsResetting(false);
+    }
+  };
 
   // Initial fetch + auto-refresh every 10 seconds
   useEffect(() => {
@@ -138,7 +171,10 @@ export default function ResultsPage() {
           <Trophy size={48} color="#ff6b1a" />
         </div>
         <h2>ยังไม่มีคะแนน</h2>
-        <p>กรรมการยังไม่ได้ส่งคะแนน กรุณารอผล...</p>
+        <p>กรรมการยังไม่ได้ส่งคะแนน หรือระบบถูกรีเซ็ตคะแนนเรียบร้อยแล้ว</p>
+        <button className={styles.refreshBtn} onClick={fetchData} style={{ marginTop: '1rem' }}>
+          <RotateCw size={14} style={{ marginRight: '6px' }} /> รีเฟรชข้อมูล
+        </button>
       </div>
     );
   }
@@ -152,11 +188,21 @@ export default function ResultsPage() {
           ผลคะแนน
         </h1>
         <p className={styles.subtitle}>DIGIT FRESHY STAR 2026 — Final Competition</p>
-        {lastUpdated && (
-          <button className={styles.refreshBtn} onClick={fetchData}>
-            <RotateCw size={14} style={{ marginRight: '6px' }} /> อัปเดตล่าสุด {lastUpdated}
+
+        <div className={styles.headerActions}>
+          {lastUpdated && (
+            <button className={styles.refreshBtn} onClick={fetchData}>
+              <RotateCw size={14} style={{ marginRight: '6px' }} /> อัปเดตล่าสุด {lastUpdated}
+            </button>
+          )}
+          <button
+            className={styles.resetBtn}
+            onClick={() => setShowResetModal(true)}
+            title="รีเซ็ตคะแนนทั้งหมด"
+          >
+            <Trash2 size={13} /> รีเซ็ตคะแนน
           </button>
-        )}
+        </div>
       </div>
 
       {/* Round Filter */}
@@ -343,6 +389,37 @@ export default function ResultsPage() {
           </p>
         )}
       </div>
+
+      {/* Confirmation Modal for Resetting Scores */}
+      {showResetModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowResetModal(false)}>
+          <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalIconWrap}>
+              <AlertTriangle size={32} />
+            </div>
+            <h3 className={styles.modalTitle}>ยืนยันการรีเซ็ตผลคะแนน?</h3>
+            <p className={styles.modalDesc}>
+              การกระทำนี้จะลบผลคะแนนและตารางอันดับทั้งหมดที่กรรมการส่งเข้ามา และไม่สามารถย้อนกลับได้
+            </p>
+            <div className={styles.modalBtns}>
+              <button
+                className={styles.cancelBtn}
+                onClick={() => setShowResetModal(false)}
+                disabled={isResetting}
+              >
+                ยกเลิก
+              </button>
+              <button
+                className={styles.confirmResetBtn}
+                onClick={handleResetScores}
+                disabled={isResetting}
+              >
+                {isResetting ? 'กำลังรีเซ็ต...' : 'ยืนยันรีเซ็ตคะแนน'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

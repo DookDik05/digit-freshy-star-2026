@@ -7,6 +7,10 @@ export function getAllScores(): Score[] {
   return scores;
 }
 
+export function resetAllScores(): void {
+  scores.length = 0;
+}
+
 export function getScoresByRound(round: number): Score[] {
   return scores.filter((s) => s.round === round);
 }

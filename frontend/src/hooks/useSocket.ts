@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { useScoringStore } from '../store/scoringStore';
 
 const getBackendUrl = () => {
   if (import.meta.env.PROD) {
@@ -36,7 +37,12 @@ export function useSocket() {
 
     socket.on('scoreUpdate', (data) => {
       console.log('[Socket] Score update received:', data);
-      // Could trigger a toast notification or live scoreboard refresh here
+    });
+
+    socket.on('scoreReset', () => {
+      console.log('[Socket] Score reset received');
+      useScoringStore.getState().resetScores();
+      useScoringStore.setState({ submittedRounds: [] });
     });
 
     return () => {

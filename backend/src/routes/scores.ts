@@ -7,6 +7,7 @@ import {
   getScoresByRound,
   getSummaryByRound,
   getOverallResults,
+  resetAllScores,
 } from '../data/scoreStore';
 import type { ApiResponse, Score } from '../types';
 import { Server as SocketServer } from 'socket.io';
@@ -23,6 +24,19 @@ const ScoreSchema = z.object({
 
 // Attach Socket.IO server to router
 export function createScoreRouter(io: SocketServer) {
+  // POST & DELETE /api/scores/reset — Reset all scores
+  const handleReset = (_req: Request, res: Response) => {
+    resetAllScores();
+    io.emit('scoreReset');
+    res.json({
+      success: true,
+      message: 'รีเซ็ตคะแนนทั้งหมดเรียบร้อยแล้ว',
+    });
+  };
+
+  router.post('/reset', handleReset);
+  router.delete('/reset', handleReset);
+
   // GET /api/scores — All scores
   router.get('/', (_req: Request, res: Response) => {
     const response: ApiResponse<Score[]> = {
