@@ -5,12 +5,13 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
+    "build": "tsc && node -e \"if(require('fs').existsSync('src/images')) require('fs').cpSync('src/images', 'dist/images', {recursive: true, force: true})\"",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
+    "digit-freshy-star-2026": "file:..",
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
     "socket.io": "^4.7.5",

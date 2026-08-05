@@ -9,6 +9,7 @@ import contestantsRouter from './routes/contestants';
 import { createScoreRouter } from './routes/scores';
 
 const app = express();
+app.set('trust proxy', 1);
 const httpServer = createServer(app);
 
 const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
@@ -17,7 +18,7 @@ const PORT = process.env.PORT || 3001;
 // ─── Socket.IO ────────────────────────────────────────────────────────────────
 const io = new SocketServer(httpServer, {
   cors: {
-    origin: FRONTEND_ORIGIN,
+    origin: process.env.NODE_ENV === 'production' ? true : FRONTEND_ORIGIN,
     methods: ['GET', 'POST'],
   },
 });
@@ -32,7 +33,7 @@ io.on('connection', (socket) => {
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: FRONTEND_ORIGIN,
+    origin: process.env.NODE_ENV === 'production' ? true : FRONTEND_ORIGIN,
     methods: ['GET', 'POST', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
   })
@@ -40,7 +41,12 @@ app.use(
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
-app.use('/images', express.static(require('path').join(__dirname, 'images')));
+
+// Serve images from all potential locations
+app.use('/images', express.static(path.join(__dirname, '../src/images')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/images', express.static(path.join(__dirname, '../../frontend/public/images')));
+app.use('/images', express.static(path.join(__dirname, '../../frontend/dist/images')));
 
 // Rate limiter — max 60 requests per minute per IP
 const limiter = rateLimit({
