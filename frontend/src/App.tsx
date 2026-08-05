@@ -37,7 +37,8 @@ export default function App() {
 
   useEffect(() => {
     fetchContestants();
-  }, [fetchContestants]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleOpenModal = useCallback(() => {
     setError(null);

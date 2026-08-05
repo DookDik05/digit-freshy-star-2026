@@ -23,11 +23,19 @@ export function useScoring() {
   const setShowModal = useScoringStore((s) => s.setShowModal);
   const markRoundSubmitted = useScoringStore((s) => s.markRoundSubmitted);
 
-  const fetchTop7Qualified = useCallback(async () => {
+  const fetchContestants = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`${BACKEND_URL}/api/scores/results`);
-      if (res.ok) {
-        const json = await res.json();
+      const res = await fetch(`${BACKEND_URL}/api/contestants`);
+      if (!res.ok) throw new Error('Failed to fetch contestants');
+      const data = await res.json();
+      setContestants(data.data);
+      
+      // Fetch top 7 silently
+      const rRes = await fetch(`${BACKEND_URL}/api/scores/results`);
+      if (rRes.ok) {
+        const json = await rRes.json();
         const results = json.data ?? [];
         if (results.length > 0) {
           const top7 = results
@@ -37,26 +45,12 @@ export function useScoring() {
         }
       }
     } catch (err) {
-      console.error('Failed to fetch top 7 qualified:', err);
-    }
-  }, [setQualifiedTop7Ids]);
-
-  const fetchContestants = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/contestants`);
-      if (!res.ok) throw new Error('Failed to fetch contestants');
-      const data = await res.json();
-      setContestants(data.data);
-      await fetchTop7Qualified();
-    } catch (err) {
       setError('ไม่สามารถโหลดข้อมูลผู้เข้าประกวดได้ กรุณาลองใหม่');
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [setContestants, setError, setLoading, fetchTop7Qualified]);
+  }, [setContestants, setError, setLoading, setQualifiedTop7Ids]);
 
   const submitScores = useCallback(async () => {
     const { judgeId, scores, currentRound } = useScoringStore.getState();

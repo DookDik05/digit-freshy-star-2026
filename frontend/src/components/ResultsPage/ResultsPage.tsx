@@ -66,7 +66,8 @@ export default function ResultsPage() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsLoading(true);
     try {
       const [cRes, rRes] = await Promise.all([
         fetch(`${BACKEND_URL}/api/contestants`),
@@ -100,7 +101,7 @@ export default function ResultsPage() {
       });
       if (res.ok) {
         setShowResetModal(false);
-        await fetchData();
+        await fetchData(true);
       } else {
         alert('เกิดข้อผิดพลาดในการรีเซ็ตคะแนน');
       }
@@ -114,20 +115,30 @@ export default function ResultsPage() {
 
   // Initial fetch + real-time socket listener + auto-refresh fallback
   useEffect(() => {
-    fetchData();
+    fetchData(false);
+
     const socket = io(BACKEND_URL || undefined, {
       transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 3000,
+      timeout: 10000,
     });
 
-    socket.on('scoreUpdate', () => {
-      fetchData();
-    });
-    socket.on('scoreReset', () => {
-      fetchData();
-    });
+    const handleUpdate = () => {
+      fetchData(true);
+    };
 
-    const interval = setInterval(fetchData, 5000);
+    socket.on('scoreUpdate', handleUpdate);
+    socket.on('scoreReset', handleUpdate);
+
+    // Fallback polling every 15 seconds (silent)
+    const interval = setInterval(() => {
+      fetchData(true);
+    }, 15000);
+
     return () => {
+      socket.off('scoreUpdate', handleUpdate);
+      socket.off('scoreReset', handleUpdate);
       socket.disconnect();
       clearInterval(interval);
     };
@@ -187,7 +198,7 @@ export default function ResultsPage() {
         </div>
         <h2>ยังไม่มีคะแนน</h2>
         <p>กรรมการยังไม่ได้ส่งคะแนน หรือระบบถูกรีเซ็ตคะแนนเรียบร้อยแล้ว</p>
-        <button className={styles.refreshBtn} onClick={fetchData} style={{ marginTop: '1rem' }}>
+        <button className={styles.refreshBtn} onClick={() => fetchData(false)} style={{ marginTop: '1rem' }}>
           <RotateCw size={14} style={{ marginRight: '6px' }} /> รีเฟรชข้อมูล
         </button>
       </div>
@@ -206,7 +217,7 @@ export default function ResultsPage() {
 
         <div className={styles.headerActions}>
           {lastUpdated && (
-            <button className={styles.refreshBtn} onClick={fetchData}>
+            <button className={styles.refreshBtn} onClick={() => fetchData(false)}>
               <RotateCw size={14} style={{ marginRight: '6px' }} /> อัปเดตล่าสุด {lastUpdated}
             </button>
           )}
