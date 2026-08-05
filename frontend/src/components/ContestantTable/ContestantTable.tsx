@@ -1,0 +1,131 @@
+import { memo, useState, useCallback } from 'react';
+import type { Contestant } from '../../types';
+import ScoreButton from '../ScoreButton/ScoreButton';
+import styles from './ContestantTable.module.css';
+import { useScoringStore } from '../../store/scoringStore';
+
+interface ContestantRowProps {
+  contestant: Contestant;
+  currentScore: number | undefined;
+  submitted: boolean;
+  onScore: (contestantId: string, score: number) => void;
+}
+
+const ContestantRow = memo(function ContestantRow({
+  contestant,
+  currentScore,
+  submitted,
+  onScore,
+}: ContestantRowProps) {
+  const [imgError, setImgError] = useState(false);
+
+  const handleScore = useCallback(
+    (score: number) => {
+      onScore(contestant.id, score);
+    },
+    [contestant.id, onScore]
+  );
+
+  return (
+    <tr className={`${styles.row} ${currentScore !== undefined ? styles.scored : ''}`}>
+      {/* Number */}
+      <td className={styles.numCell}>
+        <span className={styles.numBadge}>{contestant.number}</span>
+      </td>
+
+      {/* Photo + Name */}
+      <td className={styles.photoCell}>
+        <div className={styles.contestant}>
+          <div className={styles.photoWrapper}>
+            {!imgError ? (
+              <img
+                src={contestant.photo}
+                alt={contestant.name}
+                className={styles.photo}
+                loading="lazy"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <div className={styles.photoFallback}>
+                {contestant.nickname.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className={styles.info}>
+            <span className={styles.name}>{contestant.name}</span>
+            <span className={styles.nickname}>"{contestant.nickname}"</span>
+          </div>
+        </div>
+      </td>
+
+      {/* Score Buttons 1-5 */}
+      {[1, 2, 3, 4, 5].map((score) => (
+        <td key={score} className={styles.scoreCell}>
+          <ScoreButton
+            score={score}
+            selected={currentScore === score}
+            onClick={() => handleScore(score)}
+            disabled={submitted}
+          />
+        </td>
+      ))}
+
+      {/* Current score indicator */}
+      <td className={styles.currentCell}>
+        {currentScore !== undefined ? (
+          <span className={styles.currentScore}>{currentScore}</span>
+        ) : (
+          <span className={styles.pending}>—</span>
+        )}
+      </td>
+    </tr>
+  );
+});
+
+export default function ContestantTable() {
+  const { contestants, scores, currentRound, submittedRounds, setScore } =
+    useScoringStore();
+
+  const isSubmitted = submittedRounds.includes(currentRound);
+
+  const handleScore = useCallback(
+    (contestantId: string, score: number) => {
+      if (!isSubmitted) {
+        setScore(contestantId, score);
+      }
+    },
+    [isSubmitted, setScore]
+  );
+
+  if (contestants.length === 0) return null;
+
+  return (
+    <div className={styles.tableWrapper}>
+      <table className={styles.table} role="grid" aria-label="ตารางให้คะแนนผู้เข้าประกวด">
+        <thead>
+          <tr className={styles.headerRow}>
+            <th className={styles.thNum}>#</th>
+            <th className={styles.thPhoto}>ผู้เข้าประกวด</th>
+            {[1, 2, 3, 4, 5].map((s) => (
+              <th key={s} className={styles.thScore}>
+                {s}
+              </th>
+            ))}
+            <th className={styles.thCurrent}>คะแนน</th>
+          </tr>
+        </thead>
+        <tbody>
+          {contestants.map((c) => (
+            <ContestantRow
+              key={c.id}
+              contestant={c}
+              currentScore={scores[c.id]}
+              submitted={isSubmitted}
+              onScore={handleScore}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}

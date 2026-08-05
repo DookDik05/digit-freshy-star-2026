@@ -1,0 +1,17 @@
+{
+  "name": "DIGIT FRESHY STAR 2026",
+  "short_name": "Freshy Star",
+  "description": "ระบบให้คะแนนผู้เข้าประกวด DIGIT FRESHY STAR 2026",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#080303",
+  "theme_color": "#e63012",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+.btn {
+  width: 2.8rem;
+  height: 2.8rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--primary-gradient);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover:not(.disabled) {
+  border-color: var(--accent);
+  color: var(--white);
+  transform: scale(1.12);
+  box-shadow: 0 0 12px rgba(255, 107, 26, 0.5);
+}
+
+.btn:hover:not(.disabled)::before {
+  opacity: 0.3;
+}
+
+.btn.selected {
+  border-color: var(--primary);
+  color: var(--white);
+  background: var(--primary-gradient);
+  box-shadow: 0 0 18px rgba(230, 48, 18, 0.7), 0 2px 8px rgba(0,0,0,0.5);
+  transform: scale(1.1);
+}
+
+.btn.selected::before {
+  opacity: 0;
+}
+
+.btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.number {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 480px) {
+  .btn {
+    width: 2.4rem;
+    height: 2.4rem;
+    font-size: 0.8rem;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 360px) {
+  .btn {
+    width: 2rem;
+    height: 2rem;
+    font-size: 0.72rem;
+  }
+}
