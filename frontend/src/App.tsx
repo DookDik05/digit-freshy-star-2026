@@ -1,4 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
+import { ClipboardList, Trophy, Check, CheckCircle2, AlertCircle, X } from 'lucide-react';
 import ParticleBackground from './components/ParticleBackground/ParticleBackground';
 import Header from './components/Header/Header';
 import ContestantTable from './components/ContestantTable/ContestantTable';
@@ -69,7 +70,7 @@ export default function App() {
             onClick={() => setCurrentPage('scoring')}
             id="tab-scoring"
           >
-            <span className={styles.navIcon}>📋</span>
+            <ClipboardList size={18} className={styles.navIcon} />
             ให้คะแนน
           </button>
           <button
@@ -79,7 +80,7 @@ export default function App() {
             onClick={() => setCurrentPage('results')}
             id="tab-results"
           >
-            <span className={styles.navIcon}>🏆</span>
+            <Trophy size={18} className={styles.navIcon} />
             ผลคะแนน
           </button>
         </nav>
@@ -110,7 +111,13 @@ export default function App() {
                 <div className={styles.progressHeader}>
                   <span className={styles.progressLabel}>{currentRoundLabel}</span>
                   <span className={styles.progressCount}>
-                    {isSubmitted ? '✓ ส่งคะแนนแล้ว' : `${scoredCount} / ${totalCount} คน`}
+                    {isSubmitted ? (
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <CheckCircle2 size={15} /> ส่งคะแนนแล้ว
+                      </span>
+                    ) : (
+                      `${scoredCount} / ${totalCount} คน`
+                    )}
                   </span>
                 </div>
                 <div
@@ -131,8 +138,12 @@ export default function App() {
               {/* Error */}
               {error && !showModal && (
                 <div className={styles.errorBanner} role="alert">
-                  <span>⚠️ {error}</span>
-                  <button onClick={() => setError(null)} aria-label="ปิด">✕</button>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <AlertCircle size={18} /> {error}
+                  </span>
+                  <button onClick={() => setError(null)} aria-label="ปิด">
+                    <X size={16} />
+                  </button>
                 </div>
               )}
 
@@ -150,7 +161,7 @@ export default function App() {
                   <div className={styles.submitSection}>
                     {isSubmitted ? (
                       <div className={styles.submittedBadge}>
-                        <span className={styles.checkIcon}>✓</span>
+                        <CheckCircle2 size={18} className={styles.checkIcon} />
                         ส่งคะแนน {currentRoundLabel} เรียบร้อยแล้ว
                       </div>
                     ) : (
@@ -159,9 +170,13 @@ export default function App() {
                         className={`${styles.submitBtn} ${!canSubmit ? styles.submitBtnDisabled : ''}`}
                         onClick={handleOpenModal}
                       >
-                        {canSubmit
-                          ? `✓ ส่งคะแนน ${currentRoundLabel}`
-                          : `กรุณาให้คะแนนครบ ${totalCount} คน (${scoredCount}/${totalCount})`}
+                        {canSubmit ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Check size={18} /> ส่งคะแนน {currentRoundLabel}
+                          </span>
+                        ) : (
+                          `กรุณาให้คะแนนครบ ${totalCount} คน (${scoredCount}/${totalCount})`
+                        )}
                       </button>
                     )}
                   </div>

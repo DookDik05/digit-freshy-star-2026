@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { Trophy, Crown, RotateCw, Medal } from 'lucide-react';
 import type { Contestant } from '../../types';
 import { ROUNDS } from '../../types';
 import styles from './ResultsPage.module.css';
@@ -22,9 +23,15 @@ interface RichResult extends ResultEntry {
   contestant: Contestant | undefined;
 }
 
-const RANK_ICONS = ['👑', '🥈', '🥉'];
 const RANK_LABELS = ['อันดับ 1', 'อันดับ 2', 'อันดับ 3'];
 const PODIUM_HEIGHTS = ['180px', '130px', '100px'];
+
+function RankIcon({ rank }: { rank: number }) {
+  if (rank === 1) return <Crown size={22} color="#ffd700" />;
+  if (rank === 2) return <Medal size={20} color="#c0c0c0" />;
+  if (rank === 3) return <Medal size={20} color="#cd7f32" />;
+  return <span>{rank}</span>;
+}
 
 function StarBar({ score, max = 5 }: { score: number; max?: number }) {
   const pct = Math.min((score / max) * 100, 100);
@@ -127,7 +134,9 @@ export default function ResultsPage() {
   if (results.length === 0) {
     return (
       <div className={styles.empty}>
-        <div className={styles.emptyIcon}>🏆</div>
+        <div className={styles.emptyIcon}>
+          <Trophy size={48} color="#ff6b1a" />
+        </div>
         <h2>ยังไม่มีคะแนน</h2>
         <p>กรรมการยังไม่ได้ส่งคะแนน กรุณารอผล...</p>
       </div>
@@ -139,13 +148,13 @@ export default function ResultsPage() {
       {/* Title */}
       <div className={styles.titleSection}>
         <h1 className={styles.title}>
-          <span className={styles.titleIcon}>🏆</span>
+          <Trophy size={28} className={styles.titleIcon} />
           ผลคะแนน
         </h1>
         <p className={styles.subtitle}>DIGIT FRESHY STAR 2026 — Final Competition</p>
         {lastUpdated && (
           <button className={styles.refreshBtn} onClick={fetchData}>
-            🔄 อัปเดตล่าสุด {lastUpdated}
+            <RotateCw size={14} style={{ marginRight: '6px' }} /> อัปเดตล่าสุด {lastUpdated}
           </button>
         )}
       </div>
@@ -187,7 +196,9 @@ export default function ResultsPage() {
                   {/* Photo */}
                   <div className={styles.podiumPhotoWrap}>
                     {r.rank === 1 && (
-                      <div className={styles.crownBadge}>👑</div>
+                      <div className={styles.crownBadge}>
+                        <Crown size={20} color="#ffd700" />
+                      </div>
                     )}
                     <img
                       src={r.contestant?.photo ?? ''}
@@ -224,7 +235,7 @@ export default function ResultsPage() {
                     style={{ height: PODIUM_HEIGHTS[rankIdx] ?? '80px' }}
                   >
                     <span className={styles.pillarRank}>
-                      {RANK_ICONS[rankIdx] ?? r.rank}
+                      <RankIcon rank={r.rank} />
                     </span>
                     <span className={styles.pillarLabel}>
                       {RANK_LABELS[rankIdx] ?? `อันดับ ${r.rank}`}
@@ -269,7 +280,9 @@ export default function ResultsPage() {
                 {/* Rank */}
                 <span className={styles.colRank}>
                   {r.rank <= 3 ? (
-                    <span className={styles.rankIcon}>{RANK_ICONS[r.rank - 1]}</span>
+                    <span className={styles.rankIcon} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <RankIcon rank={r.rank} />
+                    </span>
                   ) : (
                     <span className={styles.rankNum}>{r.rank}</span>
                   )}

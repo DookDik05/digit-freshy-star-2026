@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { X, Send } from 'lucide-react';
 import styles from './SubmitModal.module.css';
 import { useScoringStore } from '../../store/scoringStore';
 import { useScoring } from '../../hooks/useScoring';
@@ -66,7 +67,7 @@ export default function SubmitModal() {
             onClick={handleClose}
             aria-label="ปิด"
           >
-            ✕
+            <X size={18} />
           </button>
         </div>
 
@@ -120,7 +121,9 @@ export default function SubmitModal() {
             {isSubmitting ? (
               <span className={styles.spinner} />
             ) : (
-              '✓ ยืนยันส่งคะแนน'
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Send size={16} /> ยืนยันส่งคะแนน
+              </span>
             )}
           </button>
         </div>

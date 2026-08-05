@@ -6,7 +6,7 @@ export const contestants: Contestant[] = [
     number: 1,
     name: 'ภาวินี วงศ์กา',
     nickname: 'AOM',
-    photo: 'https://i.pravatar.cc/400?img=47',
+    photo: '/images/1.jpg',
     faculty: 'Computer Science',
   },
   {
@@ -14,7 +14,7 @@ export const contestants: Contestant[] = [
     number: 2,
     name: 'ปฏิพัน แซ่จา',
     nickname: 'PHAN',
-    photo: 'https://i.pravatar.cc/400?img=11',
+    photo: '/images/2.jpg',
     faculty: 'Computer Science',
   },
   {
@@ -22,7 +22,7 @@ export const contestants: Contestant[] = [
     number: 3,
     name: 'ชลธิชา เทพชมพู',
     nickname: 'FAHSAI',
-    photo: 'https://i.pravatar.cc/400?img=44',
+    photo: '/images/3.jpg',
     faculty: 'Graphic Design — Media Arts and Design',
   },
   {
@@ -30,7 +30,7 @@ export const contestants: Contestant[] = [
     number: 4,
     name: 'อภิชิต สังคาม',
     nickname: 'CHIT',
-    photo: 'https://i.pravatar.cc/400?img=13',
+    photo: '/images/4.jpg',
     faculty: 'Digital Technology for Business',
   },
   {
@@ -38,7 +38,7 @@ export const contestants: Contestant[] = [
     number: 5,
     name: 'ฐิตาถัน คองแมน',
     nickname: 'TONAOR',
-    photo: 'https://i.pravatar.cc/400?img=45',
+    photo: '/images/5.jpg',
     faculty: 'Digital Technology for Business',
   },
 ];

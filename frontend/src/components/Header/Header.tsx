@@ -1,9 +1,10 @@
+import { Check } from 'lucide-react';
 import styles from './Header.module.css';
 import { ROUNDS } from '../../types';
 import { useScoringStore } from '../../store/scoringStore';
 
 export default function Header() {
-  const { currentRound, setRound, submittedRounds, judgeId, setJudgeId } = useScoringStore();
+  const { currentRound, setRound, submittedRounds } = useScoringStore();
 
   return (
     <header className={styles.header}>
@@ -15,22 +16,6 @@ export default function Header() {
           <div className={styles.tagline}>POWER OF TECHNOLOGY</div>
         </div>
         <div className={styles.eventBadge}>FINAL COMPETITION</div>
-
-        <div className={styles.judgeInputGroup}>
-          <label htmlFor="judge-id-input" className={styles.judgeLabel}>
-            JUDGE ID:
-          </label>
-          <input
-            id="judge-id-input"
-            type="text"
-            className={styles.judgeInput}
-            placeholder="ใส่รหัสกรรมการ (เช่น J01)"
-            value={judgeId}
-            onChange={(e) => setJudgeId(e.target.value)}
-            maxLength={10}
-            aria-label="รหัสกรรมการ"
-          />
-        </div>
       </div>
 
       <nav className={styles.roundSelector} aria-label="เลือกรอบการแข่งขัน">
@@ -49,7 +34,11 @@ export default function Header() {
                 } ${isSubmitted ? styles.submitted : ''}`}
                 onClick={() => setRound(r.id)}
               >
-                {isSubmitted && <span className={styles.checkmark}>✓ </span>}
+                {isSubmitted && (
+                  <span className={styles.checkmark} style={{ display: 'inline-flex', alignItems: 'center', marginRight: '4px' }}>
+                    <Check size={14} />
+                  </span>
+                )}
                 {r.label}
               </button>
             );

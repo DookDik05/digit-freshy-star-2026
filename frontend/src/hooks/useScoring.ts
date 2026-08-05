@@ -1,7 +1,9 @@
 import { useCallback } from 'react';
 import { useScoringStore } from '../store/scoringStore';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL !== undefined
+  ? import.meta.env.VITE_BACKEND_URL
+  : (import.meta.env.DEV ? 'http://localhost:3001' : '');
 
 export function useScoring() {
   const store = useScoringStore();

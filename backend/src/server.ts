@@ -3,6 +3,8 @@ import { createServer } from 'http';
 import { Server as SocketServer } from 'socket.io';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
+import fs from 'fs';
 import contestantsRouter from './routes/contestants';
 import { createScoreRouter } from './routes/scores';
 
@@ -38,6 +40,7 @@ app.use(
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
+app.use('/images', express.static(require('path').join(__dirname, 'images')));
 
 // Rate limiter — max 60 requests per minute per IP
 const limiter = rateLimit({
@@ -58,10 +61,22 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// 404 handler
-app.use((_req, res) => {
-  res.status(404).json({ success: false, error: 'Route not found' });
-});
+// Frontend static build path
+const frontendDistPath = path.join(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDistPath)) {
+  app.use(express.static(frontendDistPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/images') || req.path.startsWith('/socket.io')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDistPath, 'index.html'));
+  });
+} else {
+  // 404 handler when frontend/dist is not present
+  app.use((_req, res) => {
+    res.status(404).json({ success: false, error: 'Route not found' });
+  });
+}
 
 // Global error handler
 app.use(

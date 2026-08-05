@@ -19,15 +19,15 @@ const ScoreButton = memo(function ScoreButton({
   return (
     <button
       type="button"
-      className={`${styles.scoreBtn} ${selected ? styles.selected : ''}`}
+      className={`${styles.btn} ${selected ? styles.selected : ''} ${
+        disabled ? styles.disabled : ''
+      }`}
       onClick={onClick}
       disabled={disabled}
       aria-label={`ให้คะแนน ${score} ดาว — ${SCORE_LABELS[score]}`}
       aria-pressed={selected}
-      style={{ minWidth: '44px', minHeight: '44px' }}
     >
-      <span className={styles.starIcon} aria-hidden="true">★</span>
-      <span className={styles.scoreVal}>{score}</span>
+      <span className={styles.number}>{score}</span>
     </button>
   );
 });

@@ -11,8 +11,12 @@
   --primary-orange: #ff6b1a;
   --bg-dark: #080303;
   --bg-card: rgba(20, 10, 10, 0.75);
-  --text-main: #ffffff;
-  --text-muted: rgba(255, 255, 255, 0.65);
+  --primary-gradient: linear-gradient(135deg, #e63012 0%, #ff6b1a 100%);
+  --white: #ffffff;
+  --text: #ffffff;
+  --text-muted: rgba(255, 255, 255, 0.75);
+  --border: rgba(255, 107, 26, 0.25);
+  --bg: #080303;
   --focus-ring: #ff6b1a;
 }
 
@@ -46,7 +50,7 @@ html {
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Prompt', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   background-color: var(--bg);
   color: var(--text);
   line-height: 1.6;
