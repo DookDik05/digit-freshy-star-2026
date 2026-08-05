@@ -76,7 +76,46 @@ export function createScoreRouter(io: SocketServer) {
     res.json({ success: true, data: results });
   });
 
-  // POST /api/scores — Submit a score
+  // POST /api/scores/batch — Submit multiple scores at once
+  router.post('/batch', (req: Request, res: Response) => {
+    const BatchSchema = z.array(ScoreSchema);
+    const result = BatchSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid batch input',
+        details: result.error.flatten(),
+      });
+    }
+
+    const savedScores: Score[] = [];
+    for (const item of result.data) {
+      const newScore: Score = {
+        id: uuidv4(),
+        contestantId: item.contestantId,
+        judgeId: item.judgeId,
+        round: item.round,
+        score: item.score,
+        timestamp: new Date().toISOString(),
+      };
+      savedScores.push(upsertScore(newScore));
+    }
+
+    // Broadcast update to all connected clients
+    io.emit('scoreUpdate', {
+      round: result.data[0]?.round,
+      judgeId: result.data[0]?.judgeId,
+      count: savedScores.length,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: savedScores,
+      message: `บันทึกคะแนน ${savedScores.length} รายการสำเร็จ`,
+    });
+  });
+
+  // POST /api/scores — Submit a single score
   router.post('/', (req: Request, res: Response) => {
     const result = ScoreSchema.safeParse(req.body);
     if (!result.success) {

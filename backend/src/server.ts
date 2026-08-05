@@ -48,10 +48,10 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/images', express.static(path.join(__dirname, '../../frontend/public/images')));
 app.use('/images', express.static(path.join(__dirname, '../../frontend/dist/images')));
 
-// Rate limiter — max 60 requests per minute per IP
+// Rate limiter — max 300 requests per minute per IP
 const limiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 60,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
   message: { success: false, error: 'Too many requests. Please slow down.' },

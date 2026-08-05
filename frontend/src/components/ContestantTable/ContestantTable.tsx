@@ -42,12 +42,13 @@ const ContestantRow = memo(function ContestantRow({
                 src={contestant.photo}
                 alt={contestant.name}
                 className={styles.photo}
-                loading="lazy"
+                loading="eager"
                 onError={() => setImgError(true)}
               />
             ) : (
-              <div className={styles.photoFallback}>
-                {contestant.nickname.charAt(0).toUpperCase()}
+              <div className={styles.photoFallback} title={contestant.name}>
+                <span style={{ fontSize: '0.55rem', opacity: 0.8 }}>DIGIT</span>
+                <strong style={{ fontSize: '0.8rem', lineHeight: 1 }}>{String(contestant.number).padStart(2, '0')}</strong>
               </div>
             )}
           </div>

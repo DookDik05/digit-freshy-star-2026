@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Trophy, Crown, RotateCw, Medal, Trash2, AlertTriangle } from 'lucide-react';
+import { io } from 'socket.io-client';
 import type { Contestant } from '../../types';
 import { ROUNDS } from '../../types';
 import styles from './ResultsPage.module.css';
@@ -111,11 +112,25 @@ export default function ResultsPage() {
     }
   };
 
-  // Initial fetch + auto-refresh every 10 seconds
+  // Initial fetch + real-time socket listener + auto-refresh fallback
   useEffect(() => {
     fetchData();
-    const interval = setInterval(fetchData, 10000);
-    return () => clearInterval(interval);
+    const socket = io(BACKEND_URL || undefined, {
+      transports: ['websocket', 'polling'],
+    });
+
+    socket.on('scoreUpdate', () => {
+      fetchData();
+    });
+    socket.on('scoreReset', () => {
+      fetchData();
+    });
+
+    const interval = setInterval(fetchData, 5000);
+    return () => {
+      socket.disconnect();
+      clearInterval(interval);
+    };
   }, [fetchData]);
 
   // Filter/sort for a specific round
@@ -250,9 +265,10 @@ export default function ResultsPage() {
                       src={r.contestant?.photo ?? ''}
                       alt={r.contestant?.nickname}
                       className={styles.podiumPhoto}
+                      loading="eager"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          `https://ui-avatars.com/api/?name=${r.contestant?.nickname}&background=e63012&color=fff&bold=true`;
+                          `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%23e63012"/><text x="50%" y="55%" font-family="sans-serif" font-size="36" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle">${r.contestant?.nickname?.[0] ?? 'D'}</text></svg>`;
                       }}
                     />
                   </div>
@@ -341,9 +357,10 @@ export default function ResultsPage() {
                       src={r.contestant?.photo ?? ''}
                       alt={r.contestant?.nickname}
                       className={styles.leaderPhoto}
+                      loading="eager"
                       onError={(e) => {
                         (e.target as HTMLImageElement).src =
-                          `https://ui-avatars.com/api/?name=${r.contestant?.nickname}&background=e63012&color=fff&bold=true&size=64`;
+                          `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%23e63012"/><text x="50%" y="55%" font-family="sans-serif" font-size="36" font-weight="bold" fill="%23ffffff" text-anchor="middle" dominant-baseline="middle">${r.contestant?.nickname?.[0] ?? 'D'}</text></svg>`;
                       }}
                     />
                     <div className={styles.leaderInfo}>

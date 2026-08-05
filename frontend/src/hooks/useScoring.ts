@@ -52,19 +52,15 @@ export function useScoring() {
         })
       );
 
-      const results = await Promise.allSettled(
-        submissions.map((sub) =>
-          fetch(`${BACKEND_URL}/api/scores`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(sub),
-          })
-        )
-      );
+      const res = await fetch(`${BACKEND_URL}/api/scores/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissions),
+      });
 
-      const failed = results.filter((r) => r.status === 'rejected');
-      if (failed.length > 0) {
-        throw new Error(`${failed.length} คะแนนส่งไม่สำเร็จ`);
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'ส่งคะแนนไม่สำเร็จ');
       }
 
       store.markRoundSubmitted(store.currentRound);
