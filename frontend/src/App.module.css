@@ -116,17 +116,41 @@
   letter-spacing: 0.06em;
 }
 
+.judgeInputGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 240px;
+}
+
+.judgeSelect {
+  height: 2.6rem;
+  padding: 0 0.8rem;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--white);
+  font-family: 'Prompt', 'Inter', sans-serif;
+  font-size: 0.82rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.judgeSelect option {
+  background: #140a0a;
+  color: #ffffff;
+}
+
 .judgeInput {
   flex: 1;
-  min-width: 180px;
-  max-width: 320px;
   height: 2.6rem;
   padding: 0 1rem;
   border-radius: 8px;
   border: 1.5px solid var(--border);
   background: rgba(255, 255, 255, 0.05);
   color: var(--white);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Prompt', 'Inter', sans-serif;
   font-size: 0.85rem;
   transition: all 0.2s ease;
   outline: none;
@@ -139,7 +163,68 @@
 }
 
 .judgeInput::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ─── Quick Toolbar ─── */
+.quickToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.8rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 107, 26, 0.2);
+  border-radius: 8px;
+  flex-wrap: wrap;
+}
+
+.quickTitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.quickBtns {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.quickBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--white);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quickBtn:hover {
+  border-color: var(--primary-orange);
+  background: rgba(255, 107, 26, 0.15);
+  color: #ffffff;
+}
+
+.clearBtn {
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.clearBtn:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ffffff;
 }
 
 /* ─── Progress ─── */

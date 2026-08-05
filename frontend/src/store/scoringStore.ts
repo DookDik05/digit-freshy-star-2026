@@ -22,20 +22,25 @@ interface ScoringState {
   setJudgeId: (id: string) => void;
   setRound: (round: number) => void;
   setScore: (contestantId: string, score: number) => void;
+  setAllScores: (score: number) => void;
+  clearDraftScores: () => void;
   setQualifiedTop7Ids: (ids: string[]) => void;
   setShowModal: (show: boolean) => void;
   setLoading: (loading: boolean) => void;
   setSubmitting: (submitting: boolean) => void;
   setError: (error: string | null) => void;
   markRoundSubmitted: (round: number) => void;
+  unmarkRoundSubmitted: (round: number) => void;
   resetScores: () => void;
   getActiveContestants: () => Contestant[];
   isRoundComplete: () => boolean;
 }
 
+const SAVED_JUDGE_ID = typeof window !== 'undefined' ? localStorage.getItem('digit_judge_id') || '' : '';
+
 export const useScoringStore = create<ScoringState>((set, get) => ({
   contestants: [],
-  judgeId: '',
+  judgeId: SAVED_JUDGE_ID,
   currentRound: 1,
   scores: {},
   submittedRounds: [],
@@ -46,12 +51,27 @@ export const useScoringStore = create<ScoringState>((set, get) => ({
   error: null,
 
   setContestants: (contestants) => set({ contestants }),
-  setJudgeId: (judgeId) => set({ judgeId }),
+  setJudgeId: (judgeId) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('digit_judge_id', judgeId);
+    }
+    set({ judgeId });
+  },
   setRound: (round) => set({ currentRound: round, scores: {} }),
   setScore: (contestantId, score) =>
     set((state) => ({
       scores: { ...state.scores, [contestantId]: score },
     })),
+  setAllScores: (score) => {
+    const state = get();
+    const active = state.getActiveContestants();
+    const newScores: ScoreMap = {};
+    active.forEach((c) => {
+      newScores[c.id] = score;
+    });
+    set({ scores: newScores });
+  },
+  clearDraftScores: () => set({ scores: {} }),
   setQualifiedTop7Ids: (qualifiedTop7Ids) => set({ qualifiedTop7Ids }),
   setShowModal: (showModal) => set({ showModal }),
   setLoading: (isLoading) => set({ isLoading }),
@@ -63,6 +83,10 @@ export const useScoringStore = create<ScoringState>((set, get) => ({
         ? state.submittedRounds
         : [...state.submittedRounds, round],
     })),
+  unmarkRoundSubmitted: (round) =>
+    set((state) => ({
+      submittedRounds: state.submittedRounds.filter((r) => r !== round),
+    })),
   resetScores: () => set({ scores: {}, submittedRounds: [], qualifiedTop7Ids: [] }),
   getActiveContestants: () => {
     const state = get();
@@ -72,7 +96,6 @@ export const useScoringStore = create<ScoringState>((set, get) => ({
           state.qualifiedTop7Ids.includes(c.id)
         );
       }
-      // Fallback to first 7 if top 7 not calculated yet
       return state.contestants.slice(0, 7);
     }
     return state.contestants;

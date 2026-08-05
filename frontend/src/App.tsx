@@ -1,5 +1,5 @@
 import { useEffect, useCallback, useState } from 'react';
-import { ClipboardList, Trophy, Check, CheckCircle2, AlertCircle, X, ChevronRight } from 'lucide-react';
+import { ClipboardList, Trophy, Check, CheckCircle2, AlertCircle, X, Zap, RotateCcw, Edit3, Star } from 'lucide-react';
 import ParticleBackground from './components/ParticleBackground/ParticleBackground';
 import Header from './components/Header/Header';
 import ContestantTable from './components/ContestantTable/ContestantTable';
@@ -13,22 +13,35 @@ import styles from './App.module.css';
 
 type PageView = 'scoring' | 'results';
 
+const PRESET_JUDGES = [
+  'J01 — กรรมการ 1',
+  'J02 — กรรมการ 2',
+  'J03 — กรรมการ 3',
+  'J04 — กรรมการ 4',
+  'J05 — กรรมการ 5',
+  'J06 — กรรมการ 6',
+  'J07 — กรรมการ 7',
+  'J08 — กรรมการ 8',
+];
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState<PageView>('scoring');
 
   const {
+    contestants,
     currentRound,
-    setRound,
     scores,
     judgeId,
     setJudgeId,
+    setAllScores,
+    clearDraftScores,
     isLoading,
     error,
     setError,
     showModal,
     setShowModal,
     submittedRounds,
-    getActiveContestants,
+    unmarkRoundSubmitted,
     isRoundComplete,
   } = useScoringStore();
 
@@ -49,23 +62,11 @@ export default function App() {
     setShowModal(true);
   }, [judgeId, setShowModal, setError]);
 
-  const activeContestants = getActiveContestants();
   const scoredCount = Object.keys(scores).length;
-  const totalCount = activeContestants.length;
+  const totalCount = contestants.length;
   const isSubmitted = submittedRounds.includes(currentRound);
   const canSubmit = isRoundComplete() && !isSubmitted;
   const currentRoundLabel = ROUNDS.find((r) => r.id === currentRound)?.label;
-
-  const nextRoundObj = ROUNDS.find((r) => r.id === currentRound + 1);
-
-  const handleNextRound = () => {
-    if (currentRound < 4) {
-      setRound(currentRound + 1);
-    } else {
-      setCurrentPage('results');
-    }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
 
   return (
     <div className={styles.app}>
@@ -103,22 +104,82 @@ export default function App() {
           {/* ─── SCORING PAGE ─── */}
           {currentPage === 'scoring' && (
             <>
-              {/* Judge ID */}
+              {/* Judge ID Group with Preset Selection */}
               <div className={styles.judgeSection}>
                 <label htmlFor="judgeId" className={styles.judgeLabel}>
                   รหัสกรรมการ
                 </label>
-                <input
-                  id="judgeId"
-                  type="text"
-                  className={styles.judgeInput}
-                  placeholder="เช่น J01, กรรมการ 1, ..."
-                  value={judgeId}
-                  onChange={(e) => setJudgeId(e.target.value)}
-                  maxLength={30}
-                  autoComplete="off"
-                />
+                <div className={styles.judgeInputGroup}>
+                  <select
+                    className={styles.judgeSelect}
+                    value={PRESET_JUDGES.some((j) => j.startsWith(judgeId)) ? judgeId : ''}
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        const code = e.target.value.split(' ')[0];
+                        setJudgeId(code);
+                      }
+                    }}
+                    aria-label="เลือกรหัสกรรมการลัด"
+                  >
+                    <option value="">-- เลือกรหัสลัด --</option>
+                    {PRESET_JUDGES.map((j) => {
+                      const code = j.split(' ')[0];
+                      return (
+                        <option key={code} value={code}>
+                          {j}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <input
+                    id="judgeId"
+                    type="text"
+                    className={styles.judgeInput}
+                    placeholder="หรือพิมพ์รหัสกรรมการ (เช่น J01)"
+                    value={judgeId}
+                    onChange={(e) => setJudgeId(e.target.value)}
+                    maxLength={30}
+                    autoComplete="off"
+                  />
+                </div>
               </div>
+
+              {/* Quick Scoring Toolbar */}
+              {!isSubmitted && (
+                <div className={styles.quickToolbar}>
+                  <span className={styles.quickTitle}>
+                    <Zap size={14} color="#ff6b1a" /> ทางลัดให้คะแนน:
+                  </span>
+                  <div className={styles.quickBtns}>
+                    <button
+                      type="button"
+                      className={styles.quickBtn}
+                      onClick={() => setAllScores(5)}
+                      title="ให้ 5 ดาวเต็มทุกคน"
+                    >
+                      <Star size={12} fill="currentColor" color="#ff6b1a" /> ให้ 5 ดาวทุกคน
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.quickBtn}
+                      onClick={() => setAllScores(4)}
+                      title="ให้ 4 ดาวทุกคน"
+                    >
+                      <Star size={12} fill="currentColor" color="#ff6b1a" /> ให้ 4 ดาวทุกคน
+                    </button>
+                    {scoredCount > 0 && (
+                      <button
+                        type="button"
+                        className={`${styles.quickBtn} ${styles.clearBtn}`}
+                        onClick={clearDraftScores}
+                        title="ล้างคะแนนที่เลือกอยู่ทั้งหมด"
+                      >
+                        <RotateCcw size={12} /> ล้างคะแนนร่าง
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Progress bar */}
               <div className={styles.progressSection}>
@@ -127,7 +188,7 @@ export default function App() {
                   <span className={styles.progressCount}>
                     {isSubmitted ? (
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        <CheckCircle2 size={15} /> ส่งคะแนนแล้ว
+                        <CheckCircle2 size={15} /> ส่งคะแนนเรียบร้อยแล้ว
                       </span>
                     ) : (
                       `${scoredCount} / ${totalCount} คน`
@@ -174,48 +235,33 @@ export default function App() {
                   {/* Submit */}
                   <div className={styles.submitSection}>
                     {isSubmitted ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', width: '100%' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.6rem' }}>
                         <div className={styles.submittedBadge}>
                           <CheckCircle2 size={18} className={styles.checkIcon} />
                           ส่งคะแนน {currentRoundLabel} เรียบร้อยแล้ว
                         </div>
-
                         <button
-                          className={styles.nextRoundBtn}
-                          onClick={handleNextRound}
+                          type="button"
+                          className={styles.nextRoundLinkBtn}
+                          onClick={() => unmarkRoundSubmitted(currentRound)}
                         >
-                          {currentRound < 4
-                            ? `ไปโหวตรอบถัดไป: ${nextRoundObj?.label}`
-                            : 'ดูสรุปผลคะแนนรวมการแข่งขัน'}
-                          <ChevronRight size={18} />
+                          <Edit3 size={14} /> ปลดล็อกเพื่อแก้ไขคะแนนรอบนี้
                         </button>
                       </div>
                     ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.75rem', width: '100%' }}>
-                        <button
-                          id="submit-scores-btn"
-                          className={`${styles.submitBtn} ${!canSubmit ? styles.submitBtnDisabled : ''}`}
-                          onClick={handleOpenModal}
-                        >
-                          {canSubmit ? (
-                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                              <Check size={18} /> ส่งคะแนน {currentRoundLabel}
-                            </span>
-                          ) : (
-                            `กรุณาให้คะแนนครบ ${totalCount} คน (${scoredCount}/${totalCount})`
-                          )}
-                        </button>
-
-                        {currentRound < 4 && (
-                          <button
-                            className={styles.nextRoundLinkBtn}
-                            onClick={handleNextRound}
-                            title="ข้ามไปโหวตรอบถัดไป"
-                          >
-                            ข้ามไป {nextRoundObj?.label} <ChevronRight size={16} />
-                          </button>
+                      <button
+                        id="submit-scores-btn"
+                        className={`${styles.submitBtn} ${!canSubmit ? styles.submitBtnDisabled : ''}`}
+                        onClick={handleOpenModal}
+                      >
+                        {canSubmit ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <Check size={18} /> ส่งคะแนน {currentRoundLabel}
+                          </span>
+                        ) : (
+                          `กรุณาให้คะแนนครบ ${totalCount} คน (${scoredCount}/${totalCount})`
                         )}
-                      </div>
+                      </button>
                     )}
                   </div>
                 </>
