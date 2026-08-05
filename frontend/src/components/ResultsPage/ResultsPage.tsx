@@ -3,6 +3,7 @@ import { Trophy, Crown, RotateCw, Medal, Trash2, AlertTriangle } from 'lucide-re
 import { io } from 'socket.io-client';
 import type { Contestant } from '../../types';
 import { ROUNDS } from '../../types';
+import { getContestantPhoto } from '../../utils/images';
 import styles from './ResultsPage.module.css';
 
 const getBackendUrl = () => {
@@ -273,7 +274,7 @@ export default function ResultsPage() {
                       </div>
                     )}
                     <img
-                      src={r.contestant?.photo ?? ''}
+                      src={getContestantPhoto(r.contestant?.number ?? 0, r.contestant?.photo)}
                       alt={r.contestant?.nickname}
                       className={styles.podiumPhoto}
                       loading="eager"
@@ -365,7 +366,7 @@ export default function ResultsPage() {
                 <span className={styles.colName}>
                   <div className={styles.leaderContestant}>
                     <img
-                      src={r.contestant?.photo ?? ''}
+                      src={getContestantPhoto(r.contestant?.number ?? 0, r.contestant?.photo)}
                       alt={r.contestant?.nickname}
                       className={styles.leaderPhoto}
                       loading="eager"

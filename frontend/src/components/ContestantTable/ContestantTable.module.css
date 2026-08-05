@@ -173,6 +173,15 @@
   white-space: nowrap;
 }
 
+.faculty {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
 .scoreCell {
   text-align: center;
   padding: 0.6rem 0.2rem;

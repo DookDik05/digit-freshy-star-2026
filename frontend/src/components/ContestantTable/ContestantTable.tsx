@@ -3,6 +3,7 @@ import type { Contestant } from '../../types';
 import ScoreButton from '../ScoreButton/ScoreButton';
 import styles from './ContestantTable.module.css';
 import { useScoringStore } from '../../store/scoringStore';
+import { getContestantPhoto } from '../../utils/images';
 
 interface ContestantRowProps {
   contestant: Contestant;
@@ -26,11 +27,7 @@ const ContestantRow = memo(function ContestantRow({
     [contestant.id, onScore]
   );
 
-  const photoUrl = contestant.photo?.startsWith('http') || contestant.photo?.startsWith('data:')
-    ? contestant.photo
-    : contestant.photo?.startsWith('/')
-    ? contestant.photo
-    : `/images/${contestant.number}.jpg`;
+  const photoUrl = getContestantPhoto(contestant.number, contestant.photo);
 
   return (
     <tr className={`${styles.row} ${currentScore !== undefined ? styles.scored : ''}`}>
@@ -61,6 +58,9 @@ const ContestantRow = memo(function ContestantRow({
           <div className={styles.info}>
             <span className={styles.name}>{contestant.name}</span>
             <span className={styles.nickname}>"{contestant.nickname}"</span>
+            {contestant.faculty && (
+              <span className={styles.faculty}>{contestant.faculty}</span>
+            )}
           </div>
         </div>
       </td>
