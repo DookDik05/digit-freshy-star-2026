@@ -26,6 +26,12 @@ const ContestantRow = memo(function ContestantRow({
     [contestant.id, onScore]
   );
 
+  const photoUrl = contestant.photo?.startsWith('http') || contestant.photo?.startsWith('data:')
+    ? contestant.photo
+    : contestant.photo?.startsWith('/')
+    ? contestant.photo
+    : `/images/${contestant.number}.jpg`;
+
   return (
     <tr className={`${styles.row} ${currentScore !== undefined ? styles.scored : ''}`}>
       {/* Number */}
@@ -39,7 +45,7 @@ const ContestantRow = memo(function ContestantRow({
           <div className={styles.photoWrapper}>
             {!imgError ? (
               <img
-                src={contestant.photo}
+                src={photoUrl}
                 alt={contestant.name}
                 className={styles.photo}
                 loading="eager"
@@ -47,8 +53,8 @@ const ContestantRow = memo(function ContestantRow({
               />
             ) : (
               <div className={styles.photoFallback} title={contestant.name}>
-                <span style={{ fontSize: '0.55rem', opacity: 0.8 }}>DIGIT</span>
-                <strong style={{ fontSize: '0.8rem', lineHeight: 1 }}>{String(contestant.number).padStart(2, '0')}</strong>
+                <span style={{ fontSize: '0.6rem', color: '#ffb450', fontWeight: 600, letterSpacing: '0.05em' }}>DIGIT</span>
+                <strong style={{ fontSize: '1rem', color: '#ffffff', fontWeight: 900 }}>{String(contestant.number).padStart(2, '0')}</strong>
               </div>
             )}
           </div>
